@@ -77,6 +77,8 @@
                         <button id="clear-queue-btn" class="btn btn-orange">🧹 CLEAR QUEUE</button>
                         <button id="next-question-btn" class="btn btn-yellow">⏭️ NEXT QUESTION</button>
                         <span id="question-counter">Q1</span>
+                        <button id="refresh-roster-btn" class="btn-icon" title="Refresh Players">🔄</button>
+                        <button id="close-room-btn" class="btn-icon" style="color: var(--red);" title="Close Room">✖</button>
                     </div>
                 </header>
                 <div class="host-main-content">
@@ -156,7 +158,7 @@
         <div class="modal-content">
             <span class="close-btn" id="close-qr-modal">&times;</span>
             <h3>Scan to Join</h3>
-            <div id="qr-code-img"></div>
+            <canvas id="qr-code-img"></canvas>
             <p id="qr-join-link"></p>
         </div>
     </div>

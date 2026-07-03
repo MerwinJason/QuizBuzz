@@ -38,6 +38,8 @@ const armBuzzersBtn = document.getElementById('arm-buzzers-btn');
 const clearQueueBtn = document.getElementById('clear-queue-btn');
 const nextQuestionBtn = document.getElementById('next-question-btn');
 const questionCounter = document.getElementById('question-counter');
+const refreshRosterBtn = document.getElementById('refresh-roster-btn');
+const closeRoomBtn = document.getElementById('close-room-btn');
 const teamRosterContainer = document.getElementById('team-roster-container');
 const emptyQueueMsg = document.getElementById('empty-queue-message');
 const buzzTable = document.getElementById('buzz-table');
@@ -440,6 +442,30 @@ copyRoomCodeBtn.addEventListener('click', () => {
         copyRoomCodeBtn.textContent = '✅';
         setTimeout(() => copyRoomCodeBtn.textContent = '📋', 2000);
     });
+});
+
+refreshRosterBtn.addEventListener('click', async () => {
+    refreshRosterBtn.style.transform = 'rotate(180deg)';
+    refreshRosterBtn.style.transition = 'transform 0.3s ease';
+    setTimeout(() => refreshRosterBtn.style.transform = '', 300);
+    
+    // Re-fetch players explicitly and update roster
+    const playersSnapshot = await db.ref(`rooms/${currentRoom}/players`).once('value');
+    const teamsSnapshot = await db.ref(`rooms/${currentRoom}/teams`).once('value');
+    updateTeamRoster(playersSnapshot.val() || {}, teamsSnapshot.val() || {});
+    updateLiveStats(playersSnapshot.val() || {}, teamsSnapshot.val() || {});
+});
+
+closeRoomBtn.addEventListener('click', async () => {
+    if (confirm("Are you sure you want to close this room? All players will be disconnected and the room will be deleted.")) {
+        try {
+            await db.ref(`rooms/${currentRoom}`).remove();
+        } catch (e) {
+            console.error("Error closing room", e);
+        }
+        localStorage.removeItem('quizbuzz_session');
+        window.location.reload();
+    }
 });
 
 qrCodeBtn.addEventListener('click', () => {
