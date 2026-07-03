@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔔 QuizBuzz</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDK (v10+) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+</head>
+<body>
+    <div class="background-orbs"></div>
+
+    <!-- App Container -->
+    <main id="app-container">
+
+        <!-- 1. LANDING VIEW -->
+        <div id="landing-view" class="view active">
+            <h1 class="main-title">🔔 QuizBuzz</h1>
+            <p class="subtitle">The real-time buzzer for your live quiz nights.</p>
+            <div class="button-group">
+                <button id="host-btn" class="btn btn-cyan">🎤 Host a Room</button>
+                <button id="join-btn" class="btn btn-pink">🎮 Join a Room</button>
+            </div>
+        </div>
+
+        <!-- 2. HOST VIEW -->
+        <div id="host-view" class="view">
+            <!-- Host Setup (Lobby) -->
+            <div id="host-lobby-setup">
+                <h2>Setup Your Lobby</h2>
+                <p>Choose the number of teams and give them names.</p>
+                <div class="form-group">
+                    <label>Number of Teams</label>
+                    <div id="team-count-selector" class="team-count-selector">
+                        <button class="count-btn" data-count="2">2</button>
+                        <button class="count-btn" data-count="3">3</button>
+                        <button class="count-btn active" data-count="4">4</button>
+                        <button class="count-btn" data-count="5">5</button>
+                        <button class="count-btn" data-count="6">6</button>
+                        <button class="count-btn" data-count="7">7</button>
+                        <button class="count-btn" data-count="8">8</button>
+                    </div>
+                </div>
+                <div id="team-names-container">
+                    <!-- Team name inputs will be generated here -->
+                </div>
+                <button id="open-lobby-btn" class="btn btn-green">🚀 Open Lobby</button>
+            </div>
+            
+            <!-- Host Dashboard (Game) -->
+            <div id="host-dashboard" class="hidden">
+                <header class="host-header">
+                    <div class="room-info">
+                        <span id="room-code-display"></span>
+                        <button id="copy-room-code-btn" class="btn-icon" title="Copy Code">📋</button>
+                        <button id="qr-code-btn" class="btn-icon" title="Show QR Code">📱</button>
+                    </div>
+                    <div id="live-stats" class="stats"></div>
+                    <div class="host-controls">
+                        <button id="arm-buzzers-btn" class="btn btn-gray">⚪ ARM BUZZERS</button>
+                        <button id="clear-queue-btn" class="btn btn-orange">🧹 CLEAR QUEUE</button>
+                        <button id="next-question-btn" class="btn btn-yellow">⏭️ NEXT QUESTION</button>
+                        <span id="question-counter">Q1</span>
+                    </div>
+                </header>
+                <div class="host-main-content">
+                    <aside id="team-roster-container"></aside>
+                    <section id="buzzer-queue-container">
+                        <h2>🔔 BUZZ ORDER</h2>
+                        <div id="buzz-count-display"></div>
+                        <div id="buzzer-queue">
+                            <div id="empty-queue-message">
+                                <p>Waiting for a buzz...</p>
+                                <div class="pulsing-dots">
+                                    <span>.</span><span>.</span><span>.</span>
+                                </div>
+                            </div>
+                            <table id="buzz-table" class="hidden">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Team</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="buzz-table-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PLAYER VIEW -->
+        <div id="player-view" class="view">
+            <!-- Player Join Steps -->
+            <div id="player-join-steps">
+                <!-- Team Selection -->
+                <div id="player-team-selection" class="hidden">
+                    <h3>Select Your Team</h3>
+                    <p>Teams fill up fast. Choose wisely!</p>
+                    <div id="player-team-list"></div>
+                </div>
+            </div>
+
+            <!-- Player Buzzer Screen -->
+            <div id="player-buzzer-screen" class="hidden">
+                <header class="player-header">
+                    <div id="player-info-display"></div>
+                    <div id="player-room-info"></div>
+                    <button id="leave-room-btn" class="btn-text">Leave</button>
+                </header>
+                <div class="buzzer-wrapper">
+                    <button id="buzzer-button">
+                        <span id="buzzer-label"></span>
+                        <span id="buzzer-team-letter"></span>
+                        <span id="buzzer-rank"></span>
+                    </button>
+                </div>
+                <div id="mini-queue-preview"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALS -->
+    <div id="join-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-join-modal">&times;</span>
+            <h3>Join a Room</h3>
+            <p id="join-error-msg" class="error-text"></p>
+            <input type="text" id="room-code-input" placeholder="6-Digit Room Code" maxlength="6" autocomplete="off">
+            <input type="text" id="player-name-input" placeholder="Your Name" maxlength="20" autocomplete="off">
+            <button id="submit-join-btn" class="btn btn-pink">Let's Go!</button>
+        </div>
+    </div>
+
+    <div id="qr-code-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-qr-modal">&times;</span>
+            <h3>Scan to Join</h3>
+            <div id="qr-code-img"></div>
+            <p id="qr-join-link"></p>
+        </div>
+    </div>
+
+    <!-- Main App Script -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
